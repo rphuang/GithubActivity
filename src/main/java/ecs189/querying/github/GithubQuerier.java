@@ -25,6 +25,7 @@ public class GithubQuerier {
         sb.append("<div>");
         for (int i = 0; i < response.size(); i++) {
             JSONObject event = response.get(i);
+            JSONArray commits = event.getJSONObject("payload").getJSONArray("commits");
             // Get event type
             String type = event.getString("type");
             // Get created_at date, and format it in a more pleasant style
@@ -41,7 +42,19 @@ public class GithubQuerier {
             // Add formatted date
             sb.append(" on ");
             sb.append(formatted);
-            sb.append("<br />");
+            sb.append("<br /><br />");
+            // Add the commits
+            for (int c = 0; c < commits.length(); c++){
+                JSONObject commit = commits.getJSONObject(c);
+                JSONObject author = commit.getJSONObject("author");
+                sb.append("commit " + commit.getString("sha"));
+                sb.append("<br />");
+                sb.append("Author: " + author.getString("name") + " &lt" + author.getString("email") + "&gt");
+                sb.append("<br /><br />");
+                sb.append("&emsp;" + commit.getString("message"));
+                sb.append("<br /><br />");
+            }
+
             // Add collapsible JSON textbox (don't worry about this for the homework; it's just a nice CSS thing I like)
             sb.append("<a data-toggle=\"collapse\" href=\"#event-" + i + "\">JSON</a>");
             sb.append("<div id=event-" + i + " class=\"collapse\" style=\"height: auto;\"> <pre>");
@@ -60,7 +73,11 @@ public class GithubQuerier {
         System.out.println(json);
         JSONArray events = json.getJSONArray("root");
         for (int i = 0; i < events.length() && i < 10; i++) {
-            eventList.add(events.getJSONObject(i));
+            //eventList.add(events.getJSONObject(i));
+            JSONObject event = events.getJSONObject(i);
+            if (event.getString("type").equals("PushEvent")){
+                eventList.add(event);
+            }
         }
         return eventList;
     }
