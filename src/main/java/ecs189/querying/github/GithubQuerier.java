@@ -67,18 +67,49 @@ public class GithubQuerier {
 
     private static List<JSONObject> getEvents(String user) throws IOException {
         List<JSONObject> eventList = new ArrayList<JSONObject>();
-        String url = BASE_URL + user + "/events";
-        System.out.println(url);
-        JSONObject json = Util.queryAPI(new URL(url));
-        System.out.println(json);
-        JSONArray events = json.getJSONArray("root");
-        for (int i = 0; i < events.length() && i < 10; i++) {
-            //eventList.add(events.getJSONObject(i));
+        URL url;
+        int page = 1;
+        Boolean loop = true;
+        JSONArray roots = new JSONArray();
+        JSONObject json;
+        JSONArray root;
+        do{
+            url = new URL(BASE_URL + user + "/events"  + "?page=" + page);
+            page++;
+            json = Util.queryAPI(url);
+            root = json.getJSONArray("root");
+            if (root.length()==0){
+                loop = false;
+            }
+            else{
+                roots.put(root);
+            }
+        }while(loop);
+
+        //Call method to flatten arrays into a single array
+        JSONArray events = combineRoot(roots);
+
+
+        System.out.println(events);
+        int j = 0;
+        for (int i = 0; i < events.length() && j < 10; i++) {
             JSONObject event = events.getJSONObject(i);
             if (event.getString("type").equals("PushEvent")){
                 eventList.add(event);
+                j++;
             }
         }
         return eventList;
+    }
+    private static JSONArray combineRoot(JSONArray roots) {
+        JSONArray root;//Combine all the arrays into a single array
+        JSONArray cRoot = new JSONArray();
+        for (int i = 0; i < roots.length(); i++){
+            root = roots.getJSONArray(i);
+            for (int j = 0; j < root.length(); j++){
+                cRoot.put(root.getJSONObject(j));
+            }
+        }
+        return cRoot;
     }
 }
