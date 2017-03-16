@@ -1,0 +1,42 @@
+Useful commands and information
+
+"docker build -t activity ."
+
+Use “docker rmi *imagename*” to remove an image,
+
+“docker run -d -P activity”
+
+The alternative is “-p port1:port2” where the two ports allow you to specify
+a port mapping and explicitly pick a port
+
+"docker ps -a" to see all running docker processes
+
+Type “docker port *SHA*” to see the port that Docker with identifier
+
+Normally it will run on “localhost:32770” (and you can check there), but for some
+Docker installations the default ip is different: type “ docker-machine ip default ”
+
+Type “docker rm *SHA*” to kill a Docker with identifier *SHA*
+○ Add the “-f” (force) flag to kill one that is still running, which you will often do if
+you detached it when you ran it
+○ Delete an image with “rmi” instead, also using its SHA
+
+"docker network ls"
+
+docker run -dP --net ecs189_default --name web2 activity2
+
+docker run -dP --net ecs189_default --name web1 activity
+
+MAKE SURE SCRIPTS ARE SAVED IN UNIX FORMAT
+
+docker exec -it bb72dcebd379 bash
+
+docker exec ecs189_proxy_1 /bin/bash /bin/swap2.sh
+
+docker exec ecs189_proxy_1 /bin/bash /bin/swap1.sh
+
+"docker rm $(docker ps -a -q -f status=exited)"
+
+"docker rm -f $(docker ps -a -q -f name=web1)"
+
+"docker rm -f $(docker ps -a -q -f name=web2)"
