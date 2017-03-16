@@ -1,0 +1,33 @@
+Ryan Huang, Lanh Hong
+
+Made a swap1.sh, similar to the given swap2.sh.
+
+Made a swap3.sh which takes an argument which is the image name to swap to.
+
+Made a doswap.sh which takes an argument, removes latest running container,
+run new image with argument as name, call swap3.sh with argument
+
+
+Steps for demonstrating the hotswap.
+
+CLEANUP: ./cleanup.sh
+
+1) Run "./dorun.sh" and check that both images are running (docker ps -a).
+
+2) "docker-machine ip default" to get IP of the machine
+
+3) Open browser and check ip:port (localhost:8888)
+
+4) Remove web1 using its hash (docker rm -f HASH)
+
+5) Start web2: "docker run -dP --net ecs189_default --name web2 activity2"
+
+6) Run swap2: "docker exec ecs189_proxy_1 /bin/bash /bin/swap2.sh"
+
+7) Wait and check that the page has updated to new version.
+
+8) Repeat steps 4-7 for web1.
+
+9) Test the extra credit script.
+   - ./dorun.sh
+   - ./doswap.sh IMAGENAME
