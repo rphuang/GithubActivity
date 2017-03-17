@@ -18,6 +18,7 @@ import java.util.List;
 public class GithubQuerier {
 
     private static final String BASE_URL = "https://api.github.com/users/";
+    private static final String token = "";
 
     public static String eventsAsHTML(String user) throws IOException, ParseException {
         List<JSONObject> response = getEvents(user);
@@ -51,7 +52,9 @@ public class GithubQuerier {
                 sb.append("<br />");
                 sb.append("Author: " + author.getString("name") + " &lt" + author.getString("email") + "&gt");
                 sb.append("<br /><br />");
-                sb.append("&emsp;" + commit.getString("message"));
+                String message = commit.getString("message");
+                //System.out.print(message);
+                sb.append("&emsp;" + message);
                 sb.append("<br /><br />");
             }
 
@@ -70,11 +73,24 @@ public class GithubQuerier {
         URL url;
         int page = 1;
         Boolean loop = true;
-        JSONArray roots = new JSONArray();
         JSONObject json;
         JSONArray root;
+        JSONArray events;
+        JSONObject event;
+        String extra;
+
+        //Toggle token use
+        Boolean useToken = false;
+        if (useToken){
+            extra = "&access_token=" + token;
+        }
+        else{
+            extra = "";
+        }
+
+        int j = 0;
         do{
-            url = new URL(BASE_URL + user + "/events"  + "?page=" + page);
+            url = new URL(BASE_URL + user + "/events"  + "?page=" + page + extra);
             page++;
             json = Util.queryAPI(url);
             root = json.getJSONArray("root");
@@ -82,34 +98,21 @@ public class GithubQuerier {
                 loop = false;
             }
             else{
-                roots.put(root);
+                events = json.getJSONArray("root");
+                for (int i = 0; i < events.length() && j < 10; i++) {
+                    event = events.getJSONObject(i);
+                    if (event.getString("type").equals("PushEvent")){
+                        eventList.add(event);
+                        j++;
+                    }
+                }
+            }
+            if (page == 10 || j == 10){
+                loop = false;
             }
         }while(loop);
 
-        //Call method to flatten arrays into a single array
-        JSONArray events = combineRoot(roots);
-
-
-        System.out.println(events);
-        int j = 0;
-        for (int i = 0; i < events.length() && j < 10; i++) {
-            JSONObject event = events.getJSONObject(i);
-            if (event.getString("type").equals("PushEvent")){
-                eventList.add(event);
-                j++;
-            }
-        }
+        System.out.print("Done");
         return eventList;
-    }
-    private static JSONArray combineRoot(JSONArray roots) {
-        JSONArray root;//Combine all the arrays into a single array
-        JSONArray cRoot = new JSONArray();
-        for (int i = 0; i < roots.length(); i++){
-            root = roots.getJSONArray(i);
-            for (int j = 0; j < root.length(); j++){
-                cRoot.put(root.getJSONObject(j));
-            }
-        }
-        return cRoot;
     }
 }
